@@ -1,180 +1,201 @@
+<p align="center">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Cloudflare-Accel：通过 Cloudflare Workers 转发 GitHub、GitLab 与 Docker 请求，并提供白名单和限流控制。">
+</p>
+
+<p align="center">
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--only-4c1?style=flat-square" alt="GPL-3.0-only 许可证"></a>
+  <img src="https://img.shields.io/badge/runtime-Cloudflare%20Workers-f38020?style=flat-square" alt="运行环境为 Cloudflare Workers">
+  <img src="https://img.shields.io/badge/targets-GitHub%20%2F%20GitLab%20%2F%20Docker-1f6feb?style=flat-square" alt="支持 GitHub、GitLab 和 Docker">
+</p>
+
 # Cloudflare-Accel
 
-基于 Cloudflare Workers / Pages 的 GitHub、GitLab 和 Docker 加速服务。
+一个部署在 **Cloudflare Workers** 上的受控反向代理，用于转换和转发 GitHub 文件下载、GitHub / GitLab `git clone` 与 Docker 镜像请求。
 
-一个基于 Cloudflare Workers 或 Cloudflare Pages 的反向代理服务，旨在加速 GitHub/GitLab 仓库克隆、GitHub 文件下载和 Docker 镜像拉取。通过 Cloudflare 的全球边缘网络，提供更快、更稳定的下载体验。项目提供直观的网页界面，支持将 GitHub 文件链接、Git 仓库地址和 Docker 镜像地址转换为加速链接或命令，并自动复制到剪贴板。界面针对 PC 和移动端（iPhone、Android）进行了优化，复制功能兼容主流浏览器。
+> 适合需要自建下载入口的场景。请仅代理你有权访问和分发的内容，并遵守上游服务的使用条款。
 
-## 目录
+## 能做什么
 
-- [特点](#特点)
-- [部署方法](#部署方法)
-  - [效果演示](#效果演示)
-  - [使用 Cloudflare Workers 部署](#使用-cloudflare-workers-部署)
-  - [使用 Cloudflare Pages 部署](#使用-cloudflare-pages-部署)
-- [参数说明](#参数说明)
-- [使用示例](#使用示例)
-- [许可证](#许可证)
+| 场景 | 直接使用 |
+| --- | --- |
+| GitHub 文件下载 | `https://your-domain/https://github.com/user/repo/releases/download/v1/file.zip` |
+| Git Clone | `git clone https://your-domain/https://github.com/user/repo.git` |
+| GitLab Clone | `git clone https://your-domain/https://gitlab.com/user/repo.git` |
+| Docker Hub | `docker pull your-domain/nginx` |
+| 第三方 Registry | `docker pull your-domain/ghcr.io/user/repo` |
 
-## 特点
+## 工作方式
 
-- ⚡ GitHub 文件加速（反向代理），支持 `https://` 或 `http://` 链接输入
-- 📦 Git Clone 加速，支持 GitHub / GitLab 的 `git clone` 智能 HTTP 协议
-- 🐳 Docker 镜像加速（反向代理），支持多种镜像仓库格式
-- 🎨 现代化 UI，适配 PC 和移动端（iPhone、Android），支持明暗主题切换
-- 📋 复制功能兼容 PC、iPhone 和 Android 浏览器
-- 🔒 白名单控制，支持域名和路径级别的访问限制
-
-## 部署方法
-
-### 效果演示
-
-<img width="2800" height="1420" alt="image" src="https://github.com/user-attachments/assets/ec0085f7-87a1-415c-9c19-66b6f8df982c" />
-
-### 使用 Cloudflare Workers 部署
-
-1. **创建 Cloudflare Worker**：
-   - 登录 [Cloudflare 仪表板](https://dash.cloudflare.com/)。
-   - 转到 Workers 部分，点击"创建 Worker"。
-   - 将 `_worker.js` 代码（见项目仓库）粘贴到 Worker 编辑器。
-   - 点击"部署"按钮，Worker 将上线。
-
-2. **绑定域名**：
-   - 在 Workers 路由中添加路由（如 `*.your-domain/*`），绑定到 Worker。
-   - 确保 DNS 已配置（如 `accel.your-domain.com` 解析到 Cloudflare）。
-
-3. **配置白名单（可选）**：
-   - 修改 `_worker.js` 中的 `ALLOWED_HOSTS` 和 `ALLOWED_PATHS` 数组，添加允许的域名和路径（如 `cloudflare`）。
-   - 设置 `RESTRICT_PATHS = true` 启用路径限制，仅允许 `ALLOWED_PATHS` 中的路径。
-
-### 使用 Cloudflare Pages 部署
-
-1. **创建 Cloudflare Pages 项目**：
-   - 登录 [Cloudflare 仪表板](https://dash.cloudflare.com/)。
-   - 转到 Pages 部分，点击"创建项目"。
-   - 选择"连接到 Git 仓库"或"直接上传"。
-     - **Git 仓库**：连接 GitHub 仓库（如 `fscarmen2/Cloudflare-Accel`），选择包含 `_worker.js` 的分支。
-     - **直接上传**：上传包含以下文件的文件夹：
-       - `_worker.js`（必选）
-       - `wrangler.toml`（推荐，配置入口文件）
-       - `package.json`（推荐，定义项目依赖）
-
-2. **配置构建设置**：
-   - 项目名称：输入自定义名称（如 `cloudflare-accel`）。
-   - 框架预设：选择"无"。
-   - 构建命令：`npx wrangler deploy` 或留空（Pages Functions 自动识别 `_worker.js`）。
-   - 输出目录：留空。
-   - 环境变量：无需额外配置。
-   - 点击"保存并部署"。
-
-3. **绑定自定义域名**：
-   - 在 Pages 项目设置中，点击"自定义域"。
-   - 添加域名（如 `accel.your-domain.com`），确保 DNS 已解析到 Cloudflare。
-   - 保存并等待 DNS 生效。
-
-4. **验证部署**：
-   - 访问 `https://your-pages-domain/`（或自定义域名），确认显示加速页面。
-   - 测试加速功能（见下方使用示例）。
-
-5. **配置白名单（可选）**：
-   - 编辑 `_worker.js` 中的 `ALLOWED_HOSTS` 和 `ALLOWED_PATHS` 数组，添加允许的域名和路径。
-   - 设置 `RESTRICT_PATHS = true` 启用路径限制。
-   - 提交更改（Git 仓库）或重新上传文件（直接上传）。
-
-## 参数说明
-
-| 参数名            | 说明                                                                 | 默认值                                                                 |
-|-------------------|----------------------------------------------------------------------|----------------------------------------------------------------------|
-| `ALLOWED_HOSTS`   | 允许代理的域名列表（默认白名单），未列出的域名将返回 400 错误       | `['quay.io', 'gcr.io', 'k8s.gcr.io', 'registry.k8s.io', 'ghcr.io', 'docker.cloudsmith.io', 'registry-1.docker.io', 'github.com', 'api.github.com', 'raw.githubusercontent.com', 'gist.github.com', 'gist.githubusercontent.com', 'gitlab.com', 'gitlab.freedesktop.org', 'gitlab.gnome.org', 'gitlab.kitware.com', 'gitlab.archlinux.org', 'gitlab.postmarketos.org']` |
-| `RESTRICT_PATHS`  | 是否限制 GitHub 和 Docker 请求的路径，`true` 要求路径匹配 `ALLOWED_PATHS`，`false` 允许所有路径 | `false`                                                              |
-| `ALLOWED_PATHS`   | 允许的 GitHub 和 Docker 路径关键字，仅当 `RESTRICT_PATHS = true` 时生效 | `['library', 'user-id-1', 'user-id-2']`（建议添加 `cloudflare`）     |
-
-### 修改白名单
-
-- **添加新域名**：编辑 `ALLOWED_HOSTS`，如添加 `gitlab.example.com`：
-  ```javascript
-  const ALLOWED_HOSTS = [...ALLOWED_HOSTS, 'gitlab.example.com'];
-  ```
-- **添加新路径**：编辑 `ALLOWED_PATHS`，如添加 `cloudflare`：
-  ```javascript
-  const ALLOWED_PATHS = [...ALLOWED_PATHS, 'cloudflare'];
-  ```
-- **启用路径限制**：设置 `RESTRICT_PATHS = true`，确保 `ALLOWED_PATHS` 包含所需路径。
-
-## 使用示例
-
-### 1. 访问首页
-
-```bash
-curl https://your-domain/
+```text
+curl / git / docker
+        │
+        ▼
+Cloudflare Worker
+  ├─ 域名白名单
+  ├─ 请求限流
+  ├─ Git smart-http 兼容
+  └─ Docker 认证与重定向处理
+        │
+        ▼
+GitHub · GitLab · Docker Registry
 ```
 
-- 显示网页，包含 GitHub 文件加速、Git Clone 加速和 Docker 镜像加速三个功能模块，右上角主题切换按钮，黄色闪电 favicon。移动端显示优化，复制按钮适配 iPhone 和 Android 浏览器。
+- **GitHub / GitLab**：支持文件 URL、`http://` / `https://` 格式与 Git smart-http。
+- **Docker**：支持 Docker Hub、GHCR、Quay、GCR / Kubernetes Registry 等已配置 registry。
+- **Web 首页**：可生成 GitHub 文件、Git Clone 与 Docker 的加速地址或命令，支持深浅主题。
+- **访问控制**：仅转发 `ALLOWED_HOSTS` 中的域名；可选路径白名单。
+- **滥用控制**：代理请求默认按客户端 IP 近似限制为 **60 次/分钟**；首页不计入配额。
 
-### 2. Git Clone 加速
+## 部署
 
-支持两种 URL 格式，自动识别 Git smart-http 协议：
+### 1. Fork 或克隆
 
 ```bash
-# 格式1：带 https:// 前缀（推荐）
+git clone https://github.com/keleyaa/Cloudflare-Accel.git
+cd Cloudflare-Accel
+```
+
+### 2. 修改路由
+
+在 `wrangler.toml` 中将路由改为你自己的域名：
+
+```toml
+routes = [
+  { pattern = "accel.example.com/*", script = "cloudflare-accel" }
+]
+```
+
+域名需已接入 Cloudflare，且 DNS 记录处于代理状态。
+
+### 3. 登录并部署
+
+```bash
+npx wrangler login
+npx wrangler deploy
+```
+
+部署成功后访问 `https://accel.example.com/`。首次使用 `npx` 会下载 Wrangler；也可以自行安装 Wrangler v4.36.0 或更高版本后执行 `wrangler deploy`。
+
+### 4. 部署前检查
+
+```bash
+node --check _worker.js
+npx wrangler deploy --dry-run
+```
+
+## 常用示例
+
+### Git Clone
+
+```bash
+# GitHub
 git clone https://your-domain/https://github.com/user/repo.git
+
+# GitLab
 git clone https://your-domain/https://gitlab.com/user/repo.git
+```
 
-# 格式2：不带 https:// 前缀
+也支持不带协议的路径形式：
+
+```bash
 git clone https://your-domain/github.com/user/repo.git
-git clone https://your-domain/gitlab.com/user/repo.git
 ```
 
-- 支持 GitHub 和 GitLab 系列域名
-- 自动处理 Git smart-http 协议协商，无需额外配置
-- 支持私有仓库（需要配置 Git 凭证）
+### GitHub 文件下载
 
-### 3. GitHub 文件加速
-
-**输入要求**：GitHub 链接必须以 `https://` 开头，否则提示"链接必须以 https:// 开头"。
-
-- **示例 1**：
-  - 输入：`https://github.com/cloudflare/cloudflared/releases/download/2025.7.0/cloudflared-linux-amd64`
-  - 输出：`https://your-domain/https://github.com/cloudflare/cloudflared/releases/download/2025.7.0/cloudflared-linux-amd64`
-- **示例 2**：
-  - 输入：`http://github.com/cloudflare/cloudflared/releases/download/2025.7.0/cloudflared-linux-amd64`
-  - 输出：`https://your-domain/http://github.com/cloudflare/cloudflared/releases/download/2025.7.0/cloudflared-linux-amd64`
-
-**测试（反向代理）**：
 ```bash
-curl -I https://your-domain/https://github.com/cloudflare/cloudflared/releases/download/2025.7.0/cloudflared-linux-amd64
-curl -I https://your-domain/http://github.com/cloudflare/cloudflared/releases/download/2025.7.0/cloudflared-linux-amd64
-curl -I https://your-domain/github.com/cloudflare/cloudflared/releases/download/2025.7.0/cloudflared-linux-amd64
-```
-- 返回：`200 OK`，响应内容直接从 Worker 获取（而非 302 重定向）。
-
-**测试（`RESTRICT_PATHS = true`）**：
-```bash
-curl https://your-domain/https://github.com/cloudflare/cloudflared/...  # 成功
-curl https://your-domain/https://github.com/other-user/repo/...  # 返回 403
+curl -LO https://your-domain/https://github.com/cloudflare/cloudflared/releases/download/2025.7.0/cloudflared-linux-amd64
 ```
 
-### 4. Docker 镜像加速
+### Docker 镜像
 
 ```bash
 # Docker Hub 官方镜像
 docker pull your-domain/nginx
 
-# 带命名空间的镜像
+# Docker Hub 命名空间镜像
 docker pull your-domain/amilys/embyserver
 
-# 第三方仓库镜像
+# GitHub Container Registry
 docker pull your-domain/ghcr.io/user/repo
 ```
 
-- 自动复制加速命令，弹窗提示"已复制到剪贴板"。
+## 配置
 
-### 5. 白名单外域名
+项目配置集中在 `_worker.js` 与 `wrangler.toml`。
 
-```bash
-curl https://your-domain/invalid.com/path
+| 配置 | 位置 | 默认行为 |
+| --- | --- | --- |
+| `ALLOWED_HOSTS` | `_worker.js` | 仅允许列表中的 GitHub、GitLab 与 Registry 域名 |
+| `RESTRICT_PATHS` | `_worker.js` | `false`，不按路径限制 |
+| `ALLOWED_PATHS` | `_worker.js` | `RESTRICT_PATHS = true` 时允许的路径关键字 |
+| `RATE_LIMITER` | `wrangler.toml` | 每个客户端 IP 每 60 秒最多 60 次代理请求 |
+
+### 添加允许的域名
+
+```js
+const ALLOWED_HOSTS = [
+  // 保留已有域名
+  'gitlab.example.com'
+];
 ```
-- 返回：`Error: Invalid target domain.`
+
+### 启用路径白名单
+
+```js
+const RESTRICT_PATHS = true;
+const ALLOWED_PATHS = ['library', 'your-organization'];
+```
+
+路径限制开启后，未匹配的请求会返回 `403 PATH_NOT_ALLOWED`。请先确保常用镜像名、组织名或仓库路径已在列表中。
+
+### 调整限流
+
+Cloudflare Workers Rate Limiting 的窗口只支持 `10` 或 `60` 秒。当前配置是适合公开实例的起点：
+
+```toml
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 60
+  period = 60
+```
+
+该计数按 Cloudflare 边缘位置近似计算，不是严格的全球配额。共享 NAT、校园网或移动网络用户可能共用一个 IP；请依据实际流量调整，而不要把它用于精确计费。
+
+## 错误响应
+
+代理错误会返回稳定错误码；当请求头包含 `Accept: application/json` 时，响应为 JSON：
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Too many requests. Please try again later."
+  }
+}
+```
+
+| HTTP 状态 | 错误码 | 含义 |
+| --- | --- | --- |
+| `400` | `INVALID_REQUEST` | 未提供可解析的目标路径 |
+| `400` | `INVALID_TARGET_DOMAIN` | 目标域名不在白名单中 |
+| `403` | `PATH_NOT_ALLOWED` | 路径未通过可选白名单 |
+| `429` | `RATE_LIMITED` | 请求频率超过当前限额 |
+| `502` | `UPSTREAM_REQUEST_FAILED` | 上游请求失败 |
+
+## 支持的上游
+
+默认白名单包含：
+
+- GitHub：`github.com`、`api.github.com`、`raw.githubusercontent.com`、Gist
+- GitLab：`gitlab.com`、`gitlab.freedesktop.org`、`gitlab.gnome.org`、`gitlab.kitware.com`、`gitlab.archlinux.org`、`gitlab.postmarketos.org`
+- Container Registry：Docker Hub、GHCR、Quay、GCR、`registry.k8s.io`、Cloudsmith
+
+完整列表以 `_worker.js` 的 `ALLOWED_HOSTS` 为准。
 
 ## 许可证
 
-本项目基于 MIT 许可证。详情见 [LICENSE](LICENSE) 文件。
+本项目使用 [GPL-3.0-only](./LICENSE) 许可证。

@@ -804,6 +804,39 @@ function buildGitHeaders(request, targetDomain) {
   return headers;
 }
 
+function createErrorResponse(request, status, code, message, extraHeaders = {}) {
+  const acceptsJson = request.headers.get('Accept')?.includes('application/json');
+  const body = acceptsJson
+    ? JSON.stringify({ error: { code, message } })
+    : `${code}: ${message}\n`;
+
+  return new Response(body, {
+    status,
+    headers: {
+      'Content-Type': acceptsJson ? 'application/json; charset=utf-8' : 'text/plain; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'Access-Control-Allow-Origin': '*',
+      ...extraHeaders
+    }
+  });
+}
+
+function applyCachePolicy(response, request, targetDomain, targetPath, isDockerRequest, isV2Request, v2RequestType, v2RequestTag) {
+  if (request.method !== 'GET' || request.headers.has('Authorization') || request.headers.has('Range') || response.status !== 200) {
+    return;
+  }
+
+  let ttl = 0;
+  if (isDockerRequest && isV2Request && v2RequestType === 'manifests') {
+    ttl = v2RequestTag?.startsWith('sha256:') ? 3600 : 300;
+  }
+
+  if (ttl) {
+    response.headers.set('Cache-Control', `public, max-age=${ttl}, s-maxage=${ttl}, stale-while-revalidate=60`);
+    response.headers.set('CDN-Cache-Control', `max-age=${ttl}, stale-while-revalidate=60`);
+  }
+}
+
 async function handleRequest(request, redirectCount = 0) {
   const MAX_REDIRECTS = 5; // 最大重定向次数
   const url = new URL(request.url);
@@ -842,7 +875,7 @@ async function handleRequest(request, redirectCount = 0) {
   // 提取目标域名和路径
   const pathParts = path.split('/').filter(part => part);
   if (pathParts.length < 1) {
-    return new Response('Invalid request: target domain or path required\n', { status: 400 });
+    return createErrorResponse(request, 400, 'INVALID_REQUEST', 'Target domain or path is required.');
   }
 
   let targetDomain, targetPath, isDockerRequest = false;
@@ -906,7 +939,7 @@ async function handleRequest(request, redirectCount = 0) {
   // 默认白名单检查：只允许 ALLOWED_HOSTS 中的域名
   if (!ALLOWED_HOSTS.includes(targetDomain)) {
     console.log(`Blocked: Domain ${targetDomain} not in allowed list`);
-    return new Response(`Error: Invalid target domain.\n`, { status: 400 });
+    return createErrorResponse(request, 400, 'INVALID_TARGET_DOMAIN', 'The target domain is not allowed.');
   }
 
   // 路径白名单检查（仅当 RESTRICT_PATHS = true 时）
@@ -918,7 +951,7 @@ async function handleRequest(request, redirectCount = 0) {
     );
     if (!isPathAllowed) {
       console.log(`Blocked: Path ${checkPath} not in allowed paths`);
-      return new Response(`Error: The path is not in the allowed paths.\n`, { status: 403 });
+      return createErrorResponse(request, 403, 'PATH_NOT_ALLOWED', 'The target path is not allowed.');
     }
   }
 
@@ -1085,6 +1118,8 @@ async function handleRequest(request, redirectCount = 0) {
       newResponse.headers.delete('Location');
     }
 
+    applyCachePolicy(newResponse, request, targetDomain, targetPath, isDockerRequest, isV2Request, v2RequestType, v2RequestTag);
+
     // Git smart-http 特殊处理：
     // 1. 保留 Location 头（Git 需要处理重定向）
     // 2. 保留原始 Content-Type（如 application/x-git-upload-pack-advertisement）
@@ -1102,12 +1137,25 @@ async function handleRequest(request, redirectCount = 0) {
     return newResponse;
   } catch (error) {
     console.log(`Fetch error: ${error.message}`);
-    return new Response(`Error fetching from ${targetDomain}: ${error.message}\n`, { status: 500 });
+    return createErrorResponse(request, 502, 'UPSTREAM_REQUEST_FAILED', 'The upstream request failed.');
   }
 }
 
 export default {
   async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+
+    // 首页不计入配额；所有代理请求按客户端 IP 使用默认限额。
+    if (url.pathname !== '/' && url.pathname !== '') {
+      const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+      const { success } = await env.RATE_LIMITER.limit({ key: clientIp });
+      if (!success) {
+        return createErrorResponse(request, 429, 'RATE_LIMITED', 'Too many requests. Please try again later.', {
+          'Retry-After': '60'
+        });
+      }
+    }
+
     return handleRequest(request);
   }
 };

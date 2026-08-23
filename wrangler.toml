@@ -7,3 +7,12 @@ compatibility_flags = ["nodejs_compat"]
 routes = [
   { pattern = "*", script = "cloudflare-accel" }
 ]
+
+# 公共代理接口的近似限流：每个客户端 IP 每 60 秒最多 60 次。
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 60
+  period = 60

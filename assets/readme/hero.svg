@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="title desc">
+  <title id="title">Cloudflare-Accel — GitHub、GitLab 与 Docker 的边缘代理</title>
+  <desc id="desc">请求经过 Cloudflare Workers 的加速与访问控制后，转发至 GitHub、GitLab 和 Docker Registry。</desc>
+  <rect width="1200" height="380" rx="28" fill="#07111f"/>
+  <path d="M0 312C155 269 253 350 416 303C569 259 634 206 788 247C938 287 1040 238 1200 170V380H0Z" fill="#0d2238"/>
+  <path d="M0 338C160 295 293 360 464 315C622 274 718 234 863 268C997 300 1098 260 1200 221" fill="none" stroke="#12436b" stroke-width="2"/>
+
+  <g transform="translate(64 58)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif">
+    <text x="0" y="0" fill="#79c9ff" font-size="20" font-weight="700" letter-spacing="3">CLOUDFLARE WORKER · EDGE PROXY</text>
+    <text x="0" y="70" fill="#f5f9ff" font-size="62" font-weight="750" letter-spacing="-2">Cloudflare-Accel</text>
+    <text x="0" y="116" fill="#b5c6d9" font-size="26">为 GitHub、GitLab 与 Docker 请求提供可控的边缘转发。</text>
+    <g transform="translate(0 160)">
+      <rect width="168" height="42" rx="21" fill="#0e2f4c" stroke="#267ec2"/>
+      <text x="84" y="28" text-anchor="middle" fill="#bfe6ff" font-size="20" font-weight="650">GitHub 文件</text>
+      <rect x="184" width="150" height="42" rx="21" fill="#0e2f4c" stroke="#267ec2"/>
+      <text x="259" y="28" text-anchor="middle" fill="#bfe6ff" font-size="20" font-weight="650">Git Clone</text>
+      <rect x="350" width="154" height="42" rx="21" fill="#0e2f4c" stroke="#267ec2"/>
+      <text x="427" y="28" text-anchor="middle" fill="#bfe6ff" font-size="20" font-weight="650">Docker 镜像</text>
+    </g>
+    <text x="0" y="250" fill="#7990a7" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18">ALLOWLIST  ·  RATE LIMITING  ·  SMART HTTP</text>
+  </g>
+
+  <g transform="translate(760 57)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif">
+    <text x="178" y="6" text-anchor="middle" fill="#a9bed0" font-size="19" font-weight="650">请求路径</text>
+    <g transform="translate(0 35)">
+      <rect width="160" height="82" rx="16" fill="#102842" stroke="#2e8dcc" stroke-width="2"/>
+      <text x="80" y="34" text-anchor="middle" fill="#f4f9ff" font-size="23" font-weight="700">客户端</text>
+      <text x="80" y="61" text-anchor="middle" fill="#9fc2dc" font-size="18">curl · git · docker</text>
+      <path d="M178 41H238" stroke="#79c9ff" stroke-width="3" stroke-linecap="round"/>
+      <path d="M230 32l16 9-16 9" fill="#79c9ff"/>
+      <rect x="264" width="186" height="82" rx="16" fill="#155078" stroke="#76c7ff" stroke-width="2"/>
+      <path d="M304 26l18 30h-16l12 22 32-42h-17l11-10z" fill="#ffd166"/>
+      <text x="376" y="35" text-anchor="middle" fill="#ffffff" font-size="23" font-weight="750">Cloudflare</text>
+      <text x="376" y="61" text-anchor="middle" fill="#d1ecff" font-size="18">校验 · 转发 · 限流</text>
+    </g>
+    <path d="M355 137V169" stroke="#79c9ff" stroke-width="3" stroke-linecap="round"/>
+    <path d="M346 161l9 16 9-16" fill="#79c9ff"/>
+    <g transform="translate(0 196)">
+      <rect width="130" height="72" rx="14" fill="#102842" stroke="#2e8dcc"/>
+      <text x="65" y="31" text-anchor="middle" fill="#f4f9ff" font-size="21" font-weight="700">GitHub</text>
+      <text x="65" y="54" text-anchor="middle" fill="#9fc2dc" font-size="17">文件 / Git</text>
+      <rect x="145" width="130" height="72" rx="14" fill="#102842" stroke="#2e8dcc"/>
+      <text x="210" y="31" text-anchor="middle" fill="#f4f9ff" font-size="21" font-weight="700">GitLab</text>
+      <text x="210" y="54" text-anchor="middle" fill="#9fc2dc" font-size="17">Smart HTTP</text>
+      <rect x="290" width="160" height="72" rx="14" fill="#102842" stroke="#2e8dcc"/>
+      <text x="370" y="31" text-anchor="middle" fill="#f4f9ff" font-size="21" font-weight="700">Registry</text>
+      <text x="370" y="54" text-anchor="middle" fill="#9fc2dc" font-size="17">Docker 镜像</text>
+    </g>
+  </g>
+</svg>
