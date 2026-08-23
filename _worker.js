@@ -71,205 +71,453 @@ const HOMEPAGE_HTML = `
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cloudflare 加速</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,${encodeURIComponent(LIGHTNING_SVG)}">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        var theme = stored || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
   <style>
+    :root {
+      color-scheme: light dark;
+      --accent: #0071e3;
+      --accent-active: #0059b3;
+      --accent-soft: rgba(0, 113, 227, 0.15);
+      --text-primary: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --surface-glass: rgba(255, 255, 255, 0.72);
+      --panel-bg: rgba(255, 255, 255, 0.86);
+      --panel-border: rgba(0, 0, 0, 0.06);
+      --border-soft: rgba(0, 0, 0, 0.08);
+      --border-bright: rgba(255, 255, 255, 0.8);
+      --shadow-color: rgba(15, 23, 42, 0.14);
+      --chip-bg: rgba(0, 0, 0, 0.05);
+      --chip-bg-hover: rgba(0, 0, 0, 0.08);
+      --input-bg: #ffffff;
+      --code-bg: rgba(0, 0, 0, 0.04);
+      --success: #1fa557;
+      --error: #e0342a;
+    }
+
+    html[data-theme="dark"] {
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1a6;
+      --surface-glass: rgba(28, 28, 32, 0.68);
+      --panel-bg: rgba(255, 255, 255, 0.06);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --border-soft: rgba(255, 255, 255, 0.1);
+      --border-bright: rgba(255, 255, 255, 0.16);
+      --shadow-color: rgba(0, 0, 0, 0.55);
+      --chip-bg: rgba(255, 255, 255, 0.08);
+      --chip-bg-hover: rgba(255, 255, 255, 0.14);
+      --input-bg: rgba(255, 255, 255, 0.08);
+      --code-bg: rgba(255, 255, 255, 0.06);
+      --success: #32d74b;
+      --error: #ff453a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background:
+        radial-gradient(1100px 760px at 12% -12%, rgba(10, 132, 255, 0.16), transparent 60%),
+        radial-gradient(900px 680px at 108% 8%, rgba(175, 82, 222, 0.12), transparent 55%),
+        linear-gradient(180deg, #eef1f6, #e3e7ee);
+      min-height: 100%;
+    }
+
+    html[data-theme="dark"] {
+      background:
+        radial-gradient(1100px 760px at 12% -12%, rgba(10, 132, 255, 0.22), transparent 60%),
+        radial-gradient(900px 680px at 108% 8%, rgba(94, 92, 230, 0.18), transparent 55%),
+        linear-gradient(180deg, #000000, #1c1c1e);
+    }
+
     body {
       min-height: 100vh;
+      margin: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Inter', sans-serif;
-      transition: background-color 0.3s, color 0.3s;
-      padding: 1rem;
+      padding: 2rem 1rem;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
     }
-    .light-mode {
-      background: linear-gradient(to bottom right, #f1f5f9, #e2e8f0);
-      color: #111827;
-    }
-    .dark-mode {
-      background: linear-gradient(to bottom right, #1f2937, #374151);
-      color: #e5e7eb;
-    }
-    .container {
-      width: 100%;
-      max-width: 800px;
-      padding: 1.5rem;
-      border-radius: 0.75rem;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    }
-    .light-mode .container {
-      background: #ffffff;
-    }
-    .dark-mode .container {
-      background: #1f2937;
-    }
-    .section-box {
-      background: linear-gradient(to bottom, #ffffff, #f3f4f6);
-      border-radius: 0.5rem;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    .dark-mode .section-box {
-      background: linear-gradient(to bottom, #374151, #1f2937);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+
     .theme-toggle {
       position: fixed;
-      top: 0.5rem;
-      right: 0.5rem;
-      padding: 0.5rem;
-      font-size: 1.2rem;
+      top: 1.25rem;
+      right: 1.25rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: var(--surface-glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      font-size: 1.1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px var(--shadow-color);
+      transition: transform 100ms ease-out;
     }
-    .toast {
-      position: fixed;
-      bottom: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #10b981;
-      color: white;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      opacity: 0;
-      transition: opacity 0.3s;
-      font-size: 0.9rem;
-      max-width: 90%;
+    .theme-toggle:active {
+      transform: scale(0.92);
+    }
+
+    @keyframes shell-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+        backdrop-filter: blur(0px) saturate(100%);
+        -webkit-backdrop-filter: blur(0px) saturate(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        backdrop-filter: blur(28px) saturate(180%);
+        -webkit-backdrop-filter: blur(28px) saturate(180%);
+      }
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 720px;
+      padding: 2.25rem;
+      border-radius: 28px;
+      background: var(--surface-glass);
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      border: 1px solid var(--border-soft);
+      border-top-color: var(--border-bright);
+      box-shadow: 0 24px 70px var(--shadow-color);
+      animation: shell-in 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.1rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
       text-align: center;
+      margin: 0 0 2rem;
     }
-    .toast.show {
-      opacity: 1;
+
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      padding: 1.5rem;
+      transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 200ms ease, border-color 200ms ease;
     }
-    .result-text {
-      word-break: break-all;
-      overflow-wrap: break-word;
-      font-size: 0.95rem;
-      max-width: 100%;
-      padding: 0.5rem;
-      border-radius: 0.25rem;
-      background: #f3f4f6;
+    .panel + .panel {
+      margin-top: 1.25rem;
     }
-    .dark-mode .result-text {
-      background: #2d3748;
+    @media (hover: hover) {
+      .panel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 26px var(--shadow-color);
+        border-color: var(--border-bright);
+      }
+    }
+
+    h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin: 0 0 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .panel p {
+      margin: 0 0 1rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .row {
+      display: flex;
+      gap: 0.6rem;
     }
 
     input[type="text"] {
-      background-color: white !important;
-      color: #111827 !important;
+      flex: 1;
+      min-width: 0;
+      font: inherit;
+      font-size: 0.92rem;
+      padding: 0.7rem 0.9rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
     }
-    .dark-mode input[type="text"] {
-      background-color: #374151 !important;
-      color: #e5e7eb !important;
+    input[type="text"]::placeholder {
+      color: var(--text-secondary);
+    }
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    button {
+      font: inherit;
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+    }
+    button:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+    .theme-toggle:focus-visible {
+      box-shadow: 0 4px 14px var(--shadow-color), 0 0 0 4px var(--accent-soft);
+    }
+
+    .btn-primary {
+      flex-shrink: 0;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.7rem 1.25rem;
+      transition: transform 100ms ease-out, background-color 150ms ease;
+    }
+    @media (hover: hover) {
+      .btn-primary:hover {
+        background: var(--accent-active);
+      }
+    }
+    .btn-primary:active {
+      transform: scale(0.97);
+      background: var(--accent-active);
+    }
+
+    .btn-chip {
+      flex: 1;
+      background: var(--chip-bg);
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 0.55rem 0.9rem;
+      transition: transform 100ms ease-out, background-color 150ms ease;
+    }
+    @media (hover: hover) {
+      .btn-chip:hover {
+        background: var(--chip-bg-hover);
+      }
+    }
+    .btn-chip:active {
+      transform: scale(0.96);
+      background: var(--chip-bg-hover);
+    }
+
+    .result-text {
+      margin: 0.9rem 0 0;
+      padding: 0.75rem 0.9rem;
+      border-radius: 10px;
+      background: var(--code-bg);
+      color: var(--success);
+      font: 0.85rem/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 0.75rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    footer {
+      margin-top: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.65rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    .footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+    footer a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 150ms ease;
+    }
+    @media (hover: hover) {
+      footer a:hover {
+        color: var(--accent);
+      }
+    }
+    footer a svg {
+      width: 1rem;
+      height: 1rem;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 1.75rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px) scale(0.96);
+      background: var(--success);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 12px 30px var(--shadow-color);
+      opacity: 0;
+      font-size: 0.9rem;
+      max-width: 90%;
+      text-align: center;
+      pointer-events: none;
+      transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 200ms ease;
+    }
+    .toast.error {
+      background: var(--error);
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
     }
 
     @media (max-width: 640px) {
-      .container {
-        padding: 1rem;
+      body { padding: 1rem; }
+      .shell { padding: 1.25rem; border-radius: 22px; }
+      .panel { padding: 1.1rem; }
+      h1 { font-size: 1.4rem; margin-bottom: 1.25rem; }
+      h2 { font-size: 1rem; }
+      .row { flex-direction: column; }
+      .btn-primary { width: 100%; }
+      .result-text { font-size: 0.8rem; }
+      footer { font-size: 0.75rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
       }
-      .section-box {
-        padding: 1rem;
-        margin-bottom: 1rem;
+      .toast {
+        transform: translateX(-50%) !important;
       }
-      h1 {
-        font-size: 1.5rem;
-        margin-bottom: 1.5rem;
+      .theme-toggle:active,
+      .btn-primary:active,
+      .btn-chip:active {
+        transform: none !important;
       }
-      h2 {
-        font-size: 1.25rem;
-        margin-bottom: 0.75rem;
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      .shell, .theme-toggle, .toast {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
       }
-      p {
-        font-size: 0.875rem;
+      .shell {
+        background: var(--panel-bg);
       }
-      input {
-        font-size: 0.875rem;
-        padding: 0.5rem;
-        min-height: 44px;
+    }
+
+    @media (prefers-contrast: more) {
+      .shell, .theme-toggle, .toast {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
       }
-      button {
-        font-size: 0.875rem;
-        padding: 0.5rem 1rem;
-        min-height: 44px;
-      }
-      .flex.gap-2 {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-      .github-buttons, .docker-buttons {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-      .result-text {
-        font-size: 0.8rem;
-        padding: 0.4rem;
-      }
-      footer {
-        font-size: 0.75rem;
+      .shell {
+        background: Canvas;
+        border: 1px solid currentColor;
       }
     }
   </style>
 </head>
-<body class="light-mode">
-  <button onclick="toggleTheme()" class="theme-toggle bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+<body>
+  <button onclick="toggleTheme()" class="theme-toggle" aria-label="切换主题">
     <span class="sun">☀️</span>
     <span class="moon hidden">🌙</span>
   </button>
-  <div class="container mx-auto">
-    <h1 class="text-3xl font-bold text-center mb-8">Cloudflare 加速下载</h1>
+  <div class="shell">
+    <h1>Cloudflare 加速下载</h1>
 
     <!-- GitHub 链接转换 -->
-    <div class="section-box">
-      <h2 class="text-xl font-semibold mb-2">⚡ GitHub 文件加速 / Git Clone</h2>
-      <p class="text-gray-600 dark:text-gray-300 mb-4">输入 GitHub 文件链接获取加速链接；输入以 .git 结尾的仓库地址则自动生成 git clone 加速命令。</p>
-      <div class="flex gap-2 mb-2">
+    <div class="panel">
+      <h2>⚡ GitHub 文件加速 / Git Clone</h2>
+      <p>输入 GitHub 文件链接获取加速链接；输入以 .git 结尾的仓库地址则自动生成 git clone 加速命令。</p>
+      <div class="row">
         <input
           id="github-url"
           type="text"
           placeholder="请输入 GitHub 文件链接或 .git 仓库地址，例如：https://github.com/user/repo/releases/..."
-          class="flex-grow p-2 border border-gray-400 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
         >
-        <button
-          id="github-submit-btn"
-          onclick="convertGithubUrl()"
-          class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-        >
-          获取加速链接
-        </button>
+        <button id="github-submit-btn" class="btn-primary" onclick="convertGithubUrl()">获取加速链接</button>
       </div>
-      <p id="github-result" class="mt-2 text-green-600 dark:text-green-400 result-text hidden"></p>
-      <div id="github-buttons" class="flex gap-2 mt-2 github-buttons hidden">
-        <button onclick="copyGithubUrl()" class="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition w-full">📋 复制</button>
-        <button onclick="openGithubUrl()" class="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition w-full">🔗 打开链接</button>
+      <p id="github-result" class="result-text hidden"></p>
+      <div id="github-buttons" class="btn-row hidden">
+        <button class="btn-chip" onclick="copyGithubUrl()">📋 复制</button>
+        <button class="btn-chip" onclick="openGithubUrl()">🔗 打开链接</button>
       </div>
     </div>
 
     <!-- Docker 镜像加速 -->
-    <div class="section-box">
-      <h2 class="text-xl font-semibold mb-2">🐳 Docker 镜像加速</h2>
-      <p class="text-gray-600 dark:text-gray-300 mb-4">输入原镜像地址（如 hello-world 或 ghcr.io/user/repo），获取加速拉取命令。</p>
-      <div class="flex gap-2 mb-2">
+    <div class="panel">
+      <h2>🐳 Docker 镜像加速</h2>
+      <p>输入原镜像地址（如 hello-world 或 ghcr.io/user/repo），获取加速拉取命令。</p>
+      <div class="row">
         <input
           id="docker-image"
           type="text"
           placeholder="请输入镜像地址，例如：hello-world 或 ghcr.io/user/repo"
-          class="flex-grow p-2 border border-gray-400 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
         >
-        <button
-          onclick="convertDockerImage()"
-          class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-        >
-          获取加速命令
-        </button>
+        <button class="btn-primary" onclick="convertDockerImage()">获取加速命令</button>
       </div>
-      <p id="docker-result" class="mt-2 text-green-600 dark:text-green-400 result-text hidden"></p>
-      <div id="docker-buttons" class="flex gap-2 mt-2 docker-buttons hidden">
-        <button onclick="copyDockerCommand()" class="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition w-full">📋 复制命令</button>
+      <p id="docker-result" class="result-text hidden"></p>
+      <div id="docker-buttons" class="btn-row hidden">
+        <button class="btn-chip" onclick="copyDockerCommand()">📋 复制命令</button>
       </div>
     </div>
 
-    <footer class="mt-6 text-center text-gray-500 dark:text-gray-400">
-      Powered by <a href="https://github.com/fscarmen2/Cloudflare-Accel" class="text-blue-500 hover:underline">fscarmen2/Cloudflare-Accel</a>
+    <footer>
+      <div class="footer-links">
+        <a href="https://github.com/keleyaa/Cloudflare-Accel" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          <span>GitHub 仓库</span>
+        </a>
+        <a href="https://sub.ml1.one" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"/><path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z"/></svg>
+          <span>订阅转换服务</span>
+        </a>
+      </div>
+      <span>Powered by Cloudflare Workers</span>
     </footer>
   </div>
 
@@ -281,38 +529,40 @@ const HOMEPAGE_HTML = `
     const currentHost = window.location.host;
 
     // 主题切换
-    function toggleTheme() {
-      const body = document.body;
+    function applyThemeIcon(theme) {
       const sun = document.querySelector('.sun');
       const moon = document.querySelector('.moon');
-      if (body.classList.contains('light-mode')) {
-        body.classList.remove('light-mode');
-        body.classList.add('dark-mode');
+      if (theme === 'dark') {
         sun.classList.add('hidden');
         moon.classList.remove('hidden');
-        localStorage.setItem('theme', 'dark');
       } else {
-        body.classList.remove('dark-mode');
-        body.classList.add('light-mode');
         moon.classList.add('hidden');
         sun.classList.remove('hidden');
-        localStorage.setItem('theme', 'light');
       }
     }
 
-    // 初始化主题
-    if (localStorage.getItem('theme') === 'dark') {
-      toggleTheme();
+    function toggleTheme() {
+      const root = document.documentElement;
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (e) {}
+      applyThemeIcon(next);
     }
 
+    // 初始化主题图标（data-theme 已由 head 内联脚本在首次渲染前设置，避免闪烁）
+    applyThemeIcon(document.documentElement.getAttribute('data-theme'));
+
     // 显示弹窗提示
+    let toastTimer = null;
     function showToast(message, isError = false) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
-      toast.classList.remove(isError ? 'bg-green-500' : 'bg-red-500');
-      toast.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
+      toast.classList.toggle('error', isError);
       toast.classList.add('show');
-      setTimeout(() => {
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
         toast.classList.remove('show');
       }, 3000);
     }
