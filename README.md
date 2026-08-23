@@ -55,17 +55,11 @@ git clone https://github.com/keleyaa/Cloudflare-Accel.git
 cd Cloudflare-Accel
 ```
 
-### 2. 修改路由
+### 2. 配置路由
 
-在 `wrangler.toml` 中将路由改为你自己的域名：
+部署脚本后，在 Cloudflare 仪表板的 **Workers & Pages → cloudflare-accel → Settings → Domains & Routes** 中添加自定义域名或 Worker Route。域名需已接入 Cloudflare，且 DNS 记录处于代理状态。
 
-```toml
-routes = [
-  { pattern = "accel.example.com/*", script = "cloudflare-accel" }
-]
-```
-
-域名需已接入 Cloudflare，且 DNS 记录处于代理状态。
+> 不要在 `wrangler.toml` 中保留 `{ pattern = "*", script = "cloudflare-accel" }`：Wrangler 4 不接受 `script` 字段，且 `*` 不是可部署到指定 zone 的有效 Worker Route。
 
 ### 3. 登录并部署
 

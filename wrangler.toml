@@ -3,11 +3,6 @@ main = "_worker.js"
 compatibility_date = "2025-12-01"
 compatibility_flags = ["nodejs_compat"]
 
-# 路由配置
-routes = [
-  { pattern = "*", script = "cloudflare-accel" }
-]
-
 # 公共代理接口的近似限流：每个客户端 IP 每 60 秒最多 60 次。
 [[ratelimits]]
 name = "RATE_LIMITER"
